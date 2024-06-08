@@ -1,0 +1,138 @@
+/*
+ * Copyright (c) 2021 Nordic Semiconductor ASA
+ * Copyright (c) 2024 Spark Engineering
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <st/g0/stm32g0b1Xe.dtsi>
+#include <st/g0/stm32g0b1r(b-c-e)tx-pinctrl.dtsi>
+
+#include "canfd_interface-pinctrl.dtsi"
+
+/ {
+    model = "canfd-interface";
+    compatible = "spark-engineering,canfd-interface";
+
+    chosen {
+        zephyr,console = &cdc_acm_uart0;
+        zephyr,shell-uart = &cdc_acm_uart0;
+        zephyr,uart-mcumgr = &cdc_acm_uart0;
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+        zephyr,code-partition = &slot0_partition;
+        zephyr,canbus = &fdcan1;
+    };
+
+    buttons {
+        compatible = "gpio-keys";
+        button0: button0 {
+            label = "BOOT Button";
+            gpios = <&gpiob 2 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+    };
+
+    aliases {
+        mcuboot-button0 = &button0;
+    };
+
+    can_phy1: can-phy1 {
+        compatible = "can-transceiver-gpio";
+        standby-gpios = <&gpioa 3 GPIO_ACTIVE_HIGH>;
+        max-bitrate = <8000000>;
+        #phy-cells = <0>;
+    };
+
+    can_phy2: can-phy2 {
+        compatible = "can-transceiver-gpio";
+        standby-gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;
+        max-bitrate = <8000000>;
+        #phy-cells = <0>;
+    };
+};
+
+&clk_lsi {
+    status = "okay";
+};
+
+&clk_hsi {
+    status = "okay";
+};
+
+&clk_hsi48 {
+    status = "okay";
+    crs-usb-sof;
+};
+
+&pll {
+    div-m = <1>;
+    mul-n = <8>;
+    div-p = <2>;
+    div-q = <2>;
+    div-r = <2>;
+    clocks = <&clk_hsi>;
+    status = "okay";
+};
+
+&rcc {
+    clocks = <&pll>;
+    clock-frequency = <DT_FREQ_M(64)>;
+    ahb-prescaler = <1>;
+    apb1-prescaler = <1>;
+};
+
+zephyr_udc0: &usb {
+    pinctrl-0 = <&usb_dm_pa11 &usb_dp_pa12>;
+    pinctrl-names = "default";
+    status = "okay";
+
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
+
+&fdcan1 {
+    clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>,
+             <&rcc STM32_SRC_PLL_Q FDCAN_SEL(1)>;
+    pinctrl-0 = <&fdcan1_rx_pb8 &fdcan1_tx_pb9>;
+    pinctrl-names = "default";
+    phys = <&can_phy1>;
+    status = "okay";
+};
+
+&fdcan2 {
+    clocks = <&rcc STM32_CLOCK_BUS_APB1 0x00001000>,
+             <&rcc STM32_SRC_PLL_Q FDCAN_SEL(1)>;
+    pinctrl-0 = <&fdcan2_rx_pb0 &fdcan2_tx_pb1>;
+    pinctrl-names = "default";
+    phys = <&can_phy2>;
+    status = "okay";
+};
+
+&flash0 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        boot_partition: partition@0 {
+            label = "mcuboot";
+            reg = <0x00000000 DT_SIZE_K(112)>;
+            read-only;
+        };
+        slot0_partition: partition@1C000 {
+            label = "image-0";
+            reg = <0x0001C000 DT_SIZE_K(200)>;
+        };
+        slot1_partition: partition@4E000 {
+            label = "image-1";
+            reg = <0x0004E000 DT_SIZE_K(200)>;
+        };
+        //storage_partition: partition@70000 {
+        //    label = "storage";
+        //    reg = <0x00070000 DT_SIZE_K(64)>;
+        //};
+    };
+};
+

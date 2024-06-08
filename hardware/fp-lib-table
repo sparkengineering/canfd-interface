@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "canfd-interface")(type "KiCad")(uri "${KIPRJMOD}/canfd-interface.pretty")(options "")(descr ""))
+)

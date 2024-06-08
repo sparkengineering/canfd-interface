@@ -1,0 +1,20 @@
+# Copyright (c) 2021 Nordic Semiconductor ASA
+# Copyright (c) 2024 Spark Engineering
+# SPDX-License-Identifier: Apache-2.0
+
+identifier: canfd_interface
+name: canfd-interface
+vendor: spark_engineering
+type: mcu
+arch: arm
+ram: 144
+flash: 512
+toolchain:
+  - zephyr
+  - gnuarmemb
+  - xtools
+supported:
+  - can
+  - uart
+  - gpio
+  - usb_device

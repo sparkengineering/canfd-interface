@@ -1,0 +1,9 @@
+# Copyright (c) 2024 Nordic Semiconductor ASA
+# Copyright (c) 2024 Spark Engineering
+# SPDX-License-Identifier: Apache-2.0
+
+board:
+  name: canfd_interface
+  vendor: spark_engineering
+  socs:
+    - name: stm32g0b1xx
